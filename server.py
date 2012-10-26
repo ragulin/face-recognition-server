@@ -7,6 +7,8 @@ import tornado.websocket
 import os.path
 import uuid
 from PIL import Image
+import time
+import StringIO
 from tornado.options import define, options
 
 define("port", default=8888, help="run on the given poort", type=int)
@@ -35,9 +37,8 @@ class MainHandler(tornado.web.RequestHandler):
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
   def on_message(self, message):
-    logging.info("Got message %r", type(message))
-    logging.info("Got message %r", type(bytearray(message)))
-    logging.info("Got message %r", message)
+    image = Image.open(StringIO.StringIO(message))
+    image.save("test%s.jpg" % time.time())
 
 
 def main():
