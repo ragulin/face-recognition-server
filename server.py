@@ -9,6 +9,7 @@ import uuid
 from PIL import Image
 import time
 import StringIO
+import cv
 from tornado.options import define, options
 
 define("port", default=8888, help="run on the given poort", type=int)
@@ -38,7 +39,14 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
   def on_message(self, message):
     image = Image.open(StringIO.StringIO(message))
-    image.save("test%s.jpg" % time.time())
+    cvImage = cv.CreateImageHeader(image.size, cv.IPL_DEPTH_8U, 3)
+    cv.SetData(cvImage, image.tostring())
+    dst = cv.CreateImage(cv.GetSize(cvImage), cv.IPL_DEPTH_16S, 3)
+    laplace = cv.Laplace(cvImage, dst)
+    cv.SaveImage("foo-test.png", dst)
+    cv.SaveImage("laplace.png", laplace)
+    cv.SaveImage("foo.png", cvImage)
+    image.save("test.jpg")
 
 
 def main():
