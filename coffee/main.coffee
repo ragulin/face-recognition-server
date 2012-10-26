@@ -1,8 +1,8 @@
 onError = (e) -> console.log "Rejected", e
 
 onSuccess = (localMediaStream) ->
-  console.log localMediaStream 
   video.src = webkitURL.createObjectURL(localMediaStream)
+  setInterval(update, 250) 
 
 update = -> 
   ctx.drawImage(video, 0, 0, 320, 240)
@@ -14,9 +14,8 @@ video = document.querySelector('video')
 canvas = document.querySelector('canvas')
 ctx = canvas.getContext('2d')
 ws = new WebSocket("ws://#{location.host}/socket")
-ws.onopen = -> console.log "Opened websocket"
+ws.onopen = ->  console.log "Opened websocket"
 
 
-setInterval(update, 1250) 
 navigator.webkitGetUserMedia({'video': true, 'audio': false}, onSuccess, onError) 
 

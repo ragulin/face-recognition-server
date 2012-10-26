@@ -7,8 +7,8 @@
   };
 
   onSuccess = function(localMediaStream) {
-    console.log(localMediaStream);
-    return video.src = webkitURL.createObjectURL(localMediaStream);
+    video.src = webkitURL.createObjectURL(localMediaStream);
+    return setInterval(update, 250);
   };
 
   update = function() {
@@ -29,8 +29,6 @@
   ws.onopen = function() {
     return console.log("Opened websocket");
   };
-
-  setInterval(update, 1250);
 
   navigator.webkitGetUserMedia({
     'video': true,
