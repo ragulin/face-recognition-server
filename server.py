@@ -42,7 +42,6 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
     logging.info('new connection')
 
   def on_message(self, message):
-    logging.info("got message")
     image = Image.open(StringIO.StringIO(message))
     
     #cvImage = cv2.cv.CreateImageHeader(image.size, cv2.IPL_DEPTH_8U, 3)
