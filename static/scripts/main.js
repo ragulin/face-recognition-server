@@ -30,6 +30,15 @@
     return console.log("Opened websocket");
   };
 
+  ws.onmessage = function(e) {
+    var target;
+    e.data.contentType = "image/png";
+    e.data.type = "image/png";
+    console.log(e);
+    target = document.getElementById('target');
+    return target.src = window.webkitURL.createObjectURL(e.data);
+  };
+
   navigator.webkitGetUserMedia({
     'video': true,
     'audio': false

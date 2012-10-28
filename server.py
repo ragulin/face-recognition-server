@@ -9,7 +9,8 @@ import uuid
 from PIL import Image
 import time
 import StringIO
-import cv
+import uuid
+import cv2
 from tornado.options import define, options
 
 define("port", default=8888, help="run on the given poort", type=int)
@@ -37,16 +38,30 @@ class MainHandler(tornado.web.RequestHandler):
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
+  def open(self):
+    logging.info('new connection')
+
   def on_message(self, message):
+    logging.info("got message")
     image = Image.open(StringIO.StringIO(message))
-    cvImage = cv.CreateImageHeader(image.size, cv.IPL_DEPTH_8U, 3)
-    cv.SetData(cvImage, image.tostring())
-    dst = cv.CreateImage(cv.GetSize(cvImage), cv.IPL_DEPTH_16S, 3)
-    laplace = cv.Laplace(cvImage, dst)
-    cv.SaveImage("foo-test.png", dst)
-    cv.SaveImage("laplace.png", laplace)
-    cv.SaveImage("foo.png", cvImage)
-    image.save("test.jpg")
+    
+    #cvImage = cv2.cv.CreateImageHeader(image.size, cv2.IPL_DEPTH_8U, 3)
+    #cv2.cv.SetData(cvImage, image.tostring())
+
+    self.write_message(image.tostring('jpeg', 'RGB'), True)
+    #cvImage = cv.CreateImageHeader(image.size, cv.IPL_DEPTH_8U, 3)
+    #cv.SetData(cvImage, image.tostring())
+    #dst = cv.CreateImage(cv.GetSize(cvImage), cv.IPL_DEPTH_16S, 3)
+    #laplace = cv.Laplace(cvImage, dst)
+    #self.write_message(dst.tostring(),True)
+    #cv.SaveImage("foo-test.png", dst)
+
+    #cv.SaveImage("laplace.png", laplace)
+    #cv.SaveImage("foo.png", cvImage)
+    #image.save("test.jpg")
+
+  def on_close(self):
+    logging.info('connection closed')
 
 
 def main():

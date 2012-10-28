@@ -15,7 +15,9 @@ canvas = document.querySelector('canvas')
 ctx = canvas.getContext('2d')
 ws = new WebSocket("ws://#{location.host}/socket")
 ws.onopen = ->  console.log "Opened websocket"
-
+ws.onmessage = (e) ->
+  target = document.getElementById('target')
+  target.onload = -> window.webkitURL.revokeObjectURL(url)
+  target.src = window.webkitURL.createObjectURL(e.data)
 
 navigator.webkitGetUserMedia({'video': true, 'audio': false}, onSuccess, onError) 
-
