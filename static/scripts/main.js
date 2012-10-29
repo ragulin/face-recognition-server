@@ -32,7 +32,7 @@
 
   ctx.lineWidth = 2;
 
-  ws = new WebSocket("ws://" + location.host + "/socket");
+  ws = new WebSocket("ws://" + location.host + "/facedetector");
 
   ws.onopen = function() {
     return console.log("Opened websocket");
