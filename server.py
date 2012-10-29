@@ -11,6 +11,8 @@ import time
 import StringIO
 import uuid
 import cv2
+import numpy
+import json
 from tornado.options import define, options
 
 define("port", default=8888, help="run on the given poort", type=int)
@@ -23,7 +25,6 @@ class Application(tornado.web.Application):
         ]
 
     settings = dict(
-        cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
         xsrf_cookies=True,
@@ -41,27 +42,28 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
   def open(self):
     logging.info('new connection')
 
+
+  def detect(self, img, cascade):
+    rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+    if len(rects) == 0:
+      return []
+    rects[:,2:] += rects[:,:2]
+    return rects
+
   def on_message(self, message):
     image = Image.open(StringIO.StringIO(message))
-    
-    #cvImage = cv2.cv.CreateImageHeader(image.size, cv2.IPL_DEPTH_8U, 3)
-    #cv2.cv.SetData(cvImage, image.tostring())
-
-    self.write_message(image.tostring('jpeg', 'RGB'), True)
-    #cvImage = cv.CreateImageHeader(image.size, cv.IPL_DEPTH_8U, 3)
-    #cv.SetData(cvImage, image.tostring())
-    #dst = cv.CreateImage(cv.GetSize(cvImage), cv.IPL_DEPTH_16S, 3)
-    #laplace = cv.Laplace(cvImage, dst)
-    #self.write_message(dst.tostring(),True)
-    #cv.SaveImage("foo-test.png", dst)
-
-    #cv.SaveImage("laplace.png", laplace)
-    #cv.SaveImage("foo.png", cvImage)
-    #image.save("test.jpg")
+    n = numpy.array(image)
+    gray = cv2.cvtColor(n, cv2.COLOR_RGB2GRAY)
+    gray = cv2.equalizeHist(gray)
+    #cv2.imwrite("foo.png", gray)
+    cascade = cv2.CascadeClassifier("data/haarcascade_frontalface_alt.xml")
+    faces = self.detect(gray, cascade)
+    if len(faces) > 0:
+      result = json.dumps(faces.tolist())
+      self.write_message(result)
 
   def on_close(self):
     logging.info('connection closed')
-
 
 def main():
   tornado.options.parse_command_line()

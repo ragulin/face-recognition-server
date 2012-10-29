@@ -10,14 +10,19 @@ update = ->
                   ws.send(blob)
                 ,'image/jpeg')
 
+opencvCoord2CanvasCoord = (openCvPoints) ->
+  return [openCvPoints[0], openCvPoints[1], openCvPoints[2] - openCvPoints[0], openCvPoints[3] - openCvPoints[1]]
+
 video = document.querySelector('video')
 canvas = document.querySelector('canvas')
 ctx = canvas.getContext('2d')
+ctx.strokeStyle = '#ff0'
+ctx.lineWidth = 2
 ws = new WebSocket("ws://#{location.host}/socket")
 ws.onopen = ->  console.log "Opened websocket"
 ws.onmessage = (e) ->
-  target = document.getElementById('target')
-  target.onload = -> window.webkitURL.revokeObjectURL(url)
-  target.src = window.webkitURL.createObjectURL(e.data)
+  openCvCoords = JSON.parse(e.data)[0]
+  canvasCoords = opencvCoord2CanvasCoord(openCvCoords)
+  ctx.strokeRect(canvasCoords[0], canvasCoords[1], canvasCoords[2], canvasCoords[3])
 
 navigator.webkitGetUserMedia({'video': true, 'audio': false}, onSuccess, onError) 
