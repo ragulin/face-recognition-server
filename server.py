@@ -55,7 +55,11 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
 class FaceDetectHandler(SocketHandler):
 
-  def detect(self, img, cascade):
+  def detect(self, img):
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gray = cv2.equalizeHist(gray)
+    #cv2.imwrite("foo.png", gray)
+    cascade = cv2.CascadeClassifier("data/haarcascade_frontalface_alt.xml")
     rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
     if len(rects) == 0:
       return []
@@ -63,11 +67,7 @@ class FaceDetectHandler(SocketHandler):
     return rects
 
   def process(self, cvImage):
-    gray = cv2.cvtColor(cvImage, cv2.COLOR_RGB2GRAY)
-    gray = cv2.equalizeHist(gray)
-    #cv2.imwrite("foo.png", gray)
-    cascade = cv2.CascadeClassifier("data/haarcascade_frontalface_alt.xml")
-    faces = self.detect(gray, cascade)
+    faces = self.detect(cvImage)
     if len(faces) > 0:
       result = json.dumps(faces.tolist())
       self.write_message(result)
