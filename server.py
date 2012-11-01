@@ -21,13 +21,16 @@ class Application(tornado.web.Application):
   def __init__(self):
     handlers = [
         (r"/", MainHandler),
-        (r"/facedetector", FaceDetectHandler)
+        (r"/facedetector", FaceDetectHandler),
+        (r"/harvest", SetupHarvestHandler),
+        (r"/harvesting", HarvestHandler)
         ]
 
     settings = dict(
+        cookie_secret="asdsafl.rleknknfkjqweonrkbknoijsdfckjnk 234jn",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
-        xsrf_cookies=True,
+        xsrf_cookies=False,
         autoescape=None,
         debug=True
         )
@@ -35,7 +38,7 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
   def get(self):
-    self.render("index.html")
+    self.render("facedetect.html")
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 
@@ -72,6 +75,25 @@ class FaceDetectHandler(SocketHandler):
       result = json.dumps(faces.tolist())
       self.write_message(result)
 
+class SetupHarvestHandler(tornado.web.RequestHandler):
+  IMAGE_DIR = "data/images/"
+  def get(self):
+    self.render("harvest.html")
+
+  def post(self):
+    label = self.get_argument("label", None)
+    path = self.IMAGE_DIR + label
+    if not os.path.exists(path):
+      logging.info("Created label: %s" % label)
+      os.makedirs(path)
+    self.set_secure_cookie('label', label)
+
+class HarvestHandler(SocketHandler):
+  IMAGE_DIR = "data/images/"
+  def process(self, cvImage):
+    label = self.get_secure_cookie('label')
+    path = self.IMAGE_DIR + label + "/"
+    cv2.imwrite(path + "%s.jpg" % len(os.listdir(path)), cvImage)
 
 def main():
   tornado.options.parse_command_line()
