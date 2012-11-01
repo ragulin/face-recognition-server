@@ -10,10 +10,10 @@ from PIL import Image
 import time
 import StringIO
 import uuid
-import cv2
 import numpy
 import json
 from tornado.options import define, options
+import opencv
 
 define("port", default=8888, help="run on the given poort", type=int)
 
@@ -58,19 +58,8 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
 class FaceDetectHandler(SocketHandler):
 
-  def detect(self, img):
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    gray = cv2.equalizeHist(gray)
-    #cv2.imwrite("foo.png", gray)
-    cascade = cv2.CascadeClassifier("data/haarcascade_frontalface_alt.xml")
-    rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
-    if len(rects) == 0:
-      return []
-    rects[:,2:] += rects[:,:2]
-    return rects
-
   def process(self, cvImage):
-    faces = self.detect(cvImage)
+    faces = opencv.detectFaces(cvImage)
     if len(faces) > 0:
       result = json.dumps(faces.tolist())
       self.write_message(result)
