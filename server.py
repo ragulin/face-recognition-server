@@ -71,18 +71,24 @@ class SetupHarvestHandler(tornado.web.RequestHandler):
 
   def post(self):
     label = self.get_argument("label", None)
+    logging.info("Got label %s" %  label)
     path = self.IMAGE_DIR + label
     if not os.path.exists(path):
       logging.info("Created label: %s" % label)
       os.makedirs(path)
+    logging.info("Setting secure cookie %s" % label)
     self.set_secure_cookie('label', label)
 
 class HarvestHandler(SocketHandler):
   IMAGE_DIR = "data/images/"
   def process(self, cvImage):
     label = self.get_secure_cookie('label')
+    logging.info("Got secure cookie %s", label)
     path = self.IMAGE_DIR + label + "/"
-    cv2.imwrite(path + "%s.jpg" % len(os.listdir(path)), cvImage)
+    nrOfImages = len(os.listdir(path))
+    faces = opencv.detectFaces(cvImage)
+    if len(faces) > 0 and nrOfImages < 10:
+      opencv.save(path + "%s.jpg" % nrOfImages, opencv.toGrayscale(opencv.cropFaces(cvImage, faces)))
 
 def main():
   tornado.options.parse_command_line()

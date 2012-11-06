@@ -46,6 +46,7 @@
   };
 
   saveLabel = function(label) {
+    console.log("saving " + label);
     return $.post('/harvest', {
       label: label
     }).success(function() {
@@ -65,6 +66,7 @@
     var label;
     e.preventDefault();
     label = $('#name').val();
+    console.log(label);
     if (label) {
       return saveLabel(label);
     }

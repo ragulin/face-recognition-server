@@ -27,6 +27,7 @@ ws.onmessage = (e) ->
   ctx.strokeRect(canvasCoords[0], canvasCoords[1], canvasCoords[2], canvasCoords[3])
 
 saveLabel = (label) ->
+  console.log "saving " + label
   $.post('/harvest', {label: label}).success(-> startHarvest())
 
 startHarvest = ->
@@ -36,5 +37,6 @@ startHarvest = ->
 $('button').click((e)-> 
   e.preventDefault()
   label = $('#name').val()
+  console.log(label)
   saveLabel(label) if label 
 )
