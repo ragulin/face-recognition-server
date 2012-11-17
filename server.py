@@ -47,48 +47,47 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
   def on_message(self, message):
     image = Image.open(StringIO.StringIO(message))
-    cvImage = numpy.array(image)
-    self.process(cvImage)
+    cv_image = numpy.array(image)
+    self.process(cv_image)
 
   def on_close(self):
     logging.info('connection closed')
 
-  def process(self, cvImage):
+  def process(self, cv_image):
     pass
 
 class FaceDetectHandler(SocketHandler):
 
-  def process(self, cvImage):
-    faces = opencv.detectFaces(cvImage)
+  def process(self, cv_image):
+    faces = opencv.detectFaces(cv_image)
     if len(faces) > 0:
       result = json.dumps(faces.tolist())
       self.write_message(result)
 
 class SetupHarvestHandler(tornado.web.RequestHandler):
-  IMAGE_DIR = "data/images/"
   def get(self):
     self.render("harvest.html")
 
   def post(self):
-    label = self.get_argument("label", None)
-    logging.info("Got label %s" %  label)
-    path = self.IMAGE_DIR + label
-    if not os.path.exists(path):
-      logging.info("Created label: %s" % label)
-      os.makedirs(path)
-    logging.info("Setting secure cookie %s" % label)
-    self.set_secure_cookie('label', label)
+    name = self.get_argument("label", None)
+    if not name:
+      logging.error("No label, bailing out")
+      return
+    logging.info("Got label %s" %  name)
+    opencv.Label(name=name).persist()
+    logging.info("Setting secure cookie %s" % name)
+    self.set_secure_cookie('label', name)
+    self.redirect("/harvest")
 
 class HarvestHandler(SocketHandler):
-  IMAGE_DIR = "data/images/"
-  def process(self, cvImage):
-    label = self.get_secure_cookie('label')
-    logging.info("Got secure cookie %s", label)
-    path = self.IMAGE_DIR + label + "/"
-    nrOfImages = len(os.listdir(path))
-    faces = opencv.detectFaces(cvImage)
-    if len(faces) > 0 and nrOfImages < 10:
-      opencv.save(path + "%s.jpg" % nrOfImages, opencv.toGrayscale(opencv.cropFaces(cvImage, faces)))
+  def process(self, cv_image):
+    label = opencv.Label.get(opencv.Label.name == self.get_secure_cookie('label'))
+    if not label:
+      logging.info("No cookie, bailing out")
+      return
+
+    #opencv.Image(label=label).persist(cv_image)
+    opencv.predict(cv_image)
 
 def main():
   tornado.options.parse_command_line()

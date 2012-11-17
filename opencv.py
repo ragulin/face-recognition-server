@@ -3,30 +3,31 @@ import sys
 import cv2
 import numpy as np
 import logging
+from peewee import *
 
 def detect(img, cascade):
-  gray = toGrayscale(img)
+  gray = to_grayscale(img)
   rects = cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
   if len(rects) == 0:
     return []
   return rects
 
-def detectFaces(img):
+def detect_faces(img):
   cascade = cv2.CascadeClassifier("data/haarcascade_frontalface_alt.xml")
   return detect(img, cascade)
 
-def toGrayscale(img):
+def to_grayscale(img):
   gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
   gray = cv2.equalizeHist(gray)
   return gray
 
-def containsFace(img):
-  return len(detectFaces(img)) > 0
+def contains_face(img):
+  return len(detect_faces(img)) > 0
 
 def save(path, img):
   cv2.imwrite(path, img)
   
-def cropFaces(img, faces):
+def crop_faces(img, faces):
   for face in faces:
     x, y, h, w = [result for result in face]
     return img[y:y+h,x:x+w]
@@ -52,23 +53,89 @@ def load_images(path):
       c += 1
     return images, labels
 
+def load_images_to_db(path):
+  for dirname, dirnames, filenames in os.walk(path):
+    for subdirname in dirnames:
+      subject_path = os.path.join(dirname, subdirname)
+      label = Label(name=subdirname)
+      label.save()
+      for filename in os.listdir(subject_path):
+        path = os.path.abspath(os.path.join(subject_path, filename))
+        print 'saving path %s' % path
+        image = Image(path=path, label=label)
+        image.save()
+
+def load_images_from_db():
+  images, labels = [],[]
+  for label in Label.select():
+    for image in label.image_set:
+      try:
+        cv_image = cv2.imread(image.path, cv2.IMREAD_GRAYSCALE)
+        cv_image = cv2.resize(cv_image, (100,100))
+        images.append(np.asarray(cv_image, dtype=np.uint8))
+        labels.append(label.id)
+      except IOError, (errno, strerror):
+       print "IOError({0}): {1}".format(errno, strerror)
+  return images, np.asarray(labels)
+
 def train():
-  images, labels = load_images("data/images/")
+  images, labels = load_images_from_db()
   model = cv2.createFisherFaceRecognizer()
-  model.train(images,np.asarray(labels))
+  model.train(images,labels)
   model.save("fishermodel.mdl")
 
-def predict():
-  model = cv2.createFisherFaceRecognizer()
-  model.load("fishermodel.mdl")
-  images, labels = load_images("data/images/")
-  import random
-  r = random.randrange(0, len(images))
-  print labels[r] 
-  print model.predict(images[r])
+def predict(cv_image):
+  faces = detect_faces(cv_image)
+  result = None
+  if len(faces) > 0:
+    cropped = to_grayscale(crop_faces(cv_image, faces))
+    resized = cv2.resize(cropped, (100,100))
 
+    model = cv2.createFisherFaceRecognizer()
+    model.load("fishermodel.mdl")
+    result = model.predict(resized)
+    print result 
+  return result
+
+db = SqliteDatabase("data/images.db")
+class BaseModel(Model):
+  class Meta:
+    database = db
+
+class Label(BaseModel):
+  IMAGE_DIR = "data/images"
+
+  name = CharField()
+
+  def persist(self):
+    path = os.path.join(self.IMAGE_DIR, self.name)
+    if not os.path.exists(path):
+      logging.info("Created directory: %s" % self.name)
+      os.makedirs(path)
+    self.save()
+
+class Image(BaseModel):
+  IMAGE_DIR = "data/images"
+  path = CharField()
+  label = ForeignKeyField(Label)
+
+  def persist(self, cv_image):
+    path = os.path.join(self.IMAGE_DIR, self.label.name)
+    nr_of_images = len(os.listdir(path))
+    faces = detect_faces(cv_image)
+    if len(faces) > 0 and nr_of_images < 10:
+      path += "/%s.jpg" % nr_of_images
+      path = os.path.abspath(path)
+      cropped = to_grayscale(crop_faces(cv_image, faces))
+      cv2.imwrite(path, cropped)
+      self.path = path
+      self.save()
 
 
 if __name__ == "__main__":
-  predict()
+  #load_images_to_db("data/images")
+  train()
+
+  print 'done'
+  #predict()
   #train()
