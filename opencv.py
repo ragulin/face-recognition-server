@@ -57,12 +57,12 @@ def load_images_to_db(path):
   for dirname, dirnames, filenames in os.walk(path):
     for subdirname in dirnames:
       subject_path = os.path.join(dirname, subdirname)
-      label = Label(name=subdirname)
+      label = Label.get_or_create(name=subdirname)
       label.save()
       for filename in os.listdir(subject_path):
         path = os.path.abspath(os.path.join(subject_path, filename))
-        print 'saving path %s' % path
-        image = Image(path=path, label=label)
+        logging.info('saving path %s' % path)
+        image = Image.get_or_create(path=path, label=label)
         image.save()
 
 def load_images_from_db():
@@ -94,8 +94,9 @@ def predict(cv_image):
     model = cv2.createFisherFaceRecognizer()
     model.load("fishermodel.mdl")
     result = model.predict(resized)
+    result = (Label.get(Label.id == result[0]).name, result[1])
     print result 
-  return result
+  return result 
 
 db = SqliteDatabase("data/images.db")
 class BaseModel(Model):
@@ -112,7 +113,7 @@ class Label(BaseModel):
     if not os.path.exists(path):
       logging.info("Created directory: %s" % self.name)
       os.makedirs(path)
-    self.save()
+    Label.get_or_create(name=self.name)
 
 class Image(BaseModel):
   IMAGE_DIR = "data/images"
@@ -123,9 +124,10 @@ class Image(BaseModel):
     path = os.path.join(self.IMAGE_DIR, self.label.name)
     nr_of_images = len(os.listdir(path))
     faces = detect_faces(cv_image)
-    if len(faces) > 0 and nr_of_images < 10:
+    if len(faces) > 0: #and nr_of_images < 10:
       path += "/%s.jpg" % nr_of_images
       path = os.path.abspath(path)
+      logging.info("Saving %s" % path)
       cropped = to_grayscale(crop_faces(cv_image, faces))
       cv2.imwrite(path, cropped)
       self.path = path
@@ -133,8 +135,8 @@ class Image(BaseModel):
 
 
 if __name__ == "__main__":
-  #load_images_to_db("data/images")
-  train()
+  load_images_to_db("data/images")
+  #train()
 
   print 'done'
   #predict()

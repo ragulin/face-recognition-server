@@ -16,27 +16,31 @@ ctx = canvas.getContext('2d')
 ctx.strokeStyle = '#ff0'
 ctx.lineWidth = 2
 
-opencvCoord2CanvasCoord = (openCvPoints) ->
-  return [openCvPoints[0], openCvPoints[1], openCvPoints[2] - openCvPoints[0], openCvPoints[3] - openCvPoints[1]]
-
-ws = new WebSocket("ws://#{location.host}/harvesting")
+ws = new WebSocket("ws://#{location.host}/predict")
 ws.onopen = ->  console.log "Opened websocket"
 ws.onmessage = (e) ->
-  openCvCoords = JSON.parse(e.data)[0]
-  canvasCoords = opencvCoord2CanvasCoord(openCvCoords)
-  ctx.strokeRect(canvasCoords[0], canvasCoords[1], canvasCoords[2], canvasCoords[3])
+  console.log e.data
 
 saveLabel = (label) ->
   console.log "saving " + label
   $.post('/harvest', {label: label}).success(-> startHarvest())
 
 startHarvest = ->
-  $('form').hide()
   navigator.webkitGetUserMedia({'video': true, 'audio': false}, onSuccess, onError) 
 
-$('button').click((e)-> 
+$('#start').click((e)-> 
   e.preventDefault()
   label = $('#name').val()
   console.log(label)
   saveLabel(label) if label 
+)
+
+$('#stop').click((e)-> 
+  e.preventDefault()
+  ws.close()
+)
+
+$('#train').click((e)-> 
+  e.preventDefault()
+  $.post('/train').success(-> console.log("done training"))
 )

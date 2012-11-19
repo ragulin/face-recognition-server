@@ -23,7 +23,9 @@ class Application(tornado.web.Application):
         (r"/", MainHandler),
         (r"/facedetector", FaceDetectHandler),
         (r"/harvest", SetupHarvestHandler),
-        (r"/harvesting", HarvestHandler)
+        (r"/harvesting", HarvestHandler),
+        (r"/predict", PredictHandler),
+        (r"/train", TrainHandler)
         ]
 
     settings = dict(
@@ -74,7 +76,7 @@ class SetupHarvestHandler(tornado.web.RequestHandler):
       logging.error("No label, bailing out")
       return
     logging.info("Got label %s" %  name)
-    opencv.Label(name=name).persist()
+    opencv.Label.get_or_create(name=name).persist()
     logging.info("Setting secure cookie %s" % name)
     self.set_secure_cookie('label', name)
     self.redirect("/harvest")
@@ -85,12 +87,25 @@ class HarvestHandler(SocketHandler):
     if not label:
       logging.info("No cookie, bailing out")
       return
+    opencv.Image(label=label).persist(cv_image)
 
-    #opencv.Image(label=label).persist(cv_image)
-    opencv.predict(cv_image)
+class TrainHandler(tornado.web.RequestHandler):
+  def post(self):
+    opencv.train()
+
+class PredictHandler(SocketHandler):
+  def process(self, cv_image):
+    result = opencv.predict(cv_image)
+    self.write_message(json.dumps(result))
 
 def main():
   tornado.options.parse_command_line()
+  opencv.Image().delete()
+  logging.info("Images deleted")
+  opencv.Label().delete()
+  logging.info("Labels deleted")
+  opencv.load_images_to_db("data/images")
+  logging.info("Labels and images loaded")
   app = Application()
   app.listen(options.port)
   tornado.ioloop.IOLoop.instance().start()
