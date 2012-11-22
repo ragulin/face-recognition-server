@@ -61,7 +61,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 class FaceDetectHandler(SocketHandler):
 
   def process(self, cv_image):
-    faces = opencv.detectFaces(cv_image)
+    faces = opencv.detect_faces(cv_image)
     if len(faces) > 0:
       result = json.dumps(faces.tolist())
       self.write_message(result)
@@ -84,10 +84,14 @@ class SetupHarvestHandler(tornado.web.RequestHandler):
 class HarvestHandler(SocketHandler):
   def process(self, cv_image):
     label = opencv.Label.get(opencv.Label.name == self.get_secure_cookie('label'))
+    logging.info("Got label: %s" % label.name)
     if not label:
       logging.info("No cookie, bailing out")
       return
-    opencv.Image(label=label).persist(cv_image)
+    logging.info("About to save image")
+    result = opencv.Image(label=label).persist(cv_image)
+    if result == 'Done':
+      self.write_message(json.dumps(result))
 
 class TrainHandler(tornado.web.RequestHandler):
   def post(self):
@@ -96,7 +100,8 @@ class TrainHandler(tornado.web.RequestHandler):
 class PredictHandler(SocketHandler):
   def process(self, cv_image):
     result = opencv.predict(cv_image)
-    self.write_message(json.dumps(result))
+    if result: 
+      self.write_message(json.dumps(result))
 
 def main():
   tornado.options.parse_command_line()
@@ -106,6 +111,8 @@ def main():
   logging.info("Labels deleted")
   opencv.load_images_to_db("data/images")
   logging.info("Labels and images loaded")
+  opencv.train()
+  logging.info("Model trained")
   app = Application()
   app.listen(options.port)
   tornado.ioloop.IOLoop.instance().start()

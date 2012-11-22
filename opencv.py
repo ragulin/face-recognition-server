@@ -123,8 +123,10 @@ class Image(BaseModel):
   def persist(self, cv_image):
     path = os.path.join(self.IMAGE_DIR, self.label.name)
     nr_of_images = len(os.listdir(path))
+    if nr_of_images >= 10:
+      return 'Done'
     faces = detect_faces(cv_image)
-    if len(faces) > 0: #and nr_of_images < 10:
+    if len(faces) > 0 and nr_of_images < 10:
       path += "/%s.jpg" % nr_of_images
       path = os.path.abspath(path)
       logging.info("Saving %s" % path)

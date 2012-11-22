@@ -1,19 +1,30 @@
 {% extends "index.html" %}
 
 {% block content %}
-<h1>Harvest</h1>
-<form class="form-inline">
-  <fieldset>
-    <legend>Your name please, press start, and smile at the camera</legend>
-    <label for="name">Name:</label>
-    <input type="text" name="name" id="name" value="" />
-    <button type="submit" class="btn" id="start">Start!</button>
-    <button type="submit" class="btn" id="stop">Stop!</button>
-    <button type="submit" class="btn" id="train">Train!</button>
-  </fieldset>
-</form>
-<video id="live" width="320" height="240" autoplay></video>
-<canvas width="320" id="canvas" height="240" ></canvas>
+<div class="page-header">
+  <h1>Opencv, Webrtc, Python and Websockets</h1>
+</div>
+<div class="row">
+  <span class="span5">
+    <video id="live" width="320" height="240" autoplay></video>
+    <canvas width="320" id="canvas" height="240" ></canvas>
+  </span>
+  <span class="span5">
+    <form class="form-horizontal">
+      <p>
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" value="" />
+      </p>
+      <p>
+        <button type="submit" class="btn" id="start">Start!</button>
+        <button type="submit" class="btn" id="stop">Stop!</button>
+        <button type="submit" class="btn" id="train">Train!</button>
+      </p>
+    </form>
+    <pre class="prettyprint">
+    </pre>
+  </span>
+</div>
 {% end %}
 
 {% block scripts %}
