@@ -111,7 +111,6 @@ def predict(cv_image):
           }
        }
     }
-    print result
   return result 
 
 db = SqliteDatabase("data/images.db")
