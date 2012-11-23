@@ -88,7 +88,7 @@ def train():
 
 def predict(cv_image):
   faces = detect_faces(cv_image)
-  result = None
+  result = None 
   if len(faces) > 0:
     cropped = to_grayscale(crop_faces(cv_image, faces))
     resized = cv2.resize(cropped, (100,100))
@@ -97,8 +97,19 @@ def predict(cv_image):
     model = cv2.createEigenFaceRecognizer()
     model.load(MODEL_FILE)
     result = model.predict(resized)
-    result = (Label.get(Label.id == result[0]).name, result[1])
-    print result 
+    result = {
+      'face': {
+        'name': Label.get(Label.id == result[0]).name,
+        'distance': result[1],
+        'coords': {
+          'x': str(faces[0][0]),
+          'y': str(faces[0][1]),
+          'width': str(faces[0][2]),
+          'height': str(faces[0][3])
+          }
+       }
+    }
+    print result
   return result 
 
 db = SqliteDatabase("data/images.db")

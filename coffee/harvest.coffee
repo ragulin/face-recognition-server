@@ -18,19 +18,20 @@ update = =>
 video = document.querySelector('video')
 canvas = document.querySelector('canvas')
 ctx = canvas.getContext('2d')
+ctx.strokeStyle = '#ff0'
+ctx.lineWidth = 2
 
 predict = () ->
   console.log('Started to predict')
   counter = 0
   window.ws.onmessage = (e) =>
     data = JSON.parse(e.data)
-    console.log data
+    console.log data.face.distance
     $('#predict').show()
     if data
-      name = data[0]
-      distance = data[1]
-      $('.prettyprint').text(data) 
-      if distance < 1000.0
+      $('.prettyprint').text(JSON.stringify(data, undefined, 2))
+      ctx.strokeRect(data.face.coords.x, data.face.coords.y, data.face.coords.width, data.face.coords.height) if showFace()
+      if data.face.distance < 1000 
         counter -= 1
       else
         counter += 1
@@ -41,6 +42,10 @@ predict = () ->
         console.log 'About to start training'
         $('#predict').hide()
         train()
+
+
+showFace = () ->
+  $('#show-face').attr('checked')
 
 train = () ->
   console.log('Started training')
