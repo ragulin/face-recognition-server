@@ -26,12 +26,15 @@ predict = () ->
   counter = 0
   window.ws.onmessage = (e) =>
     data = JSON.parse(e.data)
-    console.log data.face.distance
     $('#predict').show()
     if data
-      $('.prettyprint').text(JSON.stringify(data, undefined, 2))
+      debugArea = $('.prettyprint')
+      debugArea.text(JSON.stringify(data, undefined, 2))
+      debugArea.append("\n\nError counter: #{counter}")
+
+      $('#name-of-face').text("Hello #{data.face.name}!")
       ctx.strokeRect(data.face.coords.x, data.face.coords.y, data.face.coords.width, data.face.coords.height) if showFace()
-      if data.face.distance < 1000 
+      if data.face.distance < 1000 and counter > -10
         counter -= 1
       else
         counter += 1
