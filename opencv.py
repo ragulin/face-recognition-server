@@ -5,6 +5,8 @@ import numpy as np
 import logging
 from peewee import *
 
+MODEL_FILE = "model.mdl"
+
 def detect(img, cascade):
   gray = to_grayscale(img)
   rects = cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
@@ -82,7 +84,7 @@ def train():
   images, labels = load_images_from_db()
   model = cv2.createFisherFaceRecognizer()
   model.train(images,labels)
-  model.save("fishermodel.mdl")
+  model.save(MODEL_FILE)
 
 def predict(cv_image):
   faces = detect_faces(cv_image)
@@ -93,7 +95,7 @@ def predict(cv_image):
 
     #model = cv2.createFisherFaceRecognizer()
     model = cv2.createEigenFaceRecognizer()
-    model.load("fishermodel.mdl")
+    model.load(MODEL_FILE)
     result = model.predict(resized)
     result = (Label.get(Label.id == result[0]).name, result[1])
     print result 
