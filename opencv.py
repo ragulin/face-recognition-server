@@ -98,11 +98,11 @@ def predict(cv_image):
     model = cv2.createFisherFaceRecognizer()
     #model = cv2.createEigenFaceRecognizer()
     model.load(MODEL_FILE)
-    result = model.predict(resized)
+    prediction = model.predict(resized)
     result = {
       'face': {
-        'name': Label.get(Label.id == result[0]).name,
-        'distance': result[1],
+        'name': Label.get(Label.id == prediction[0]).name,
+        'distance': prediction[1],
         'coords': {
           'x': str(faces[0][0]),
           'y': str(faces[0][1]),
