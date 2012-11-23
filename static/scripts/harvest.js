@@ -69,7 +69,7 @@
           errorCounter += 1;
         }
         if (errorCounter > ERROR_THRESHOLD && !keepPredicting()) {
-          console.log(errorCounter);
+          console.log("About to close predict websocket");
           errorCounter = 0;
           return window.ws.close();
         }

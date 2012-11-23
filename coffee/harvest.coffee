@@ -43,7 +43,7 @@ predict = () ->
       else
         errorCounter += 1
       if errorCounter > ERROR_THRESHOLD and not keepPredicting()
-        console.log errorCounter
+        console.log "About to close predict websocket"
         errorCounter = 0
         window.ws.close()
 
