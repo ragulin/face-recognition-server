@@ -62,15 +62,15 @@ train = () ->
     window.ws.onmessage = (e) ->
       console.log "closing harvesting websocket"
       window.ws.close()
-      setBarWidth(70, 'Training model')
+      updateProgressBar(70, 'Training model')
 
   saveLabel = (label) ->
     console.log "Saving " + label
     $('#input').hide()
     $('#training').show()
-    setBarWidth(40, 'Saving label')
+    updateProgressBar(40, 'Saving label')
     $.post('/', {label: label}).success(-> 
-      setBarWidth('50')
+      updateProgressBar('50')
       startHarvest())
 
   $('#start').click((e)-> 
@@ -79,7 +79,7 @@ train = () ->
     saveLabel(label) if label 
   )
 
-setBarWidth = (w, text = 'Saving images') ->
+updateProgressBar = (w, text = 'Saving images') ->
   $('.bar').css('width', "#{w}%")
   $('.bar').text(text)
 
@@ -91,7 +91,7 @@ onPredictClose = (e) ->
 onTrainClose = (e) ->
   $.post('/train').success(-> 
     console.log("done training")
-    setBarWidth(100)
+    updateProgressBar(100)
     $('#training').hide()
     setupWS('predict', onPredictClose)
     predict()
