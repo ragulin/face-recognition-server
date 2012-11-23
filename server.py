@@ -20,9 +20,9 @@ define("port", default=8888, help="run on the given poort", type=int)
 class Application(tornado.web.Application):
   def __init__(self):
     handlers = [
-        (r"/", MainHandler),
-        (r"/facedetector", FaceDetectHandler),
-        (r"/harvest", SetupHarvestHandler),
+        #(r"/", MainHandler),
+        #(r"/facedetector", FaceDetectHandler),
+        (r"/", SetupHarvestHandler),
         (r"/harvesting", HarvestHandler),
         (r"/predict", PredictHandler),
         (r"/train", TrainHandler)
@@ -79,7 +79,7 @@ class SetupHarvestHandler(tornado.web.RequestHandler):
     opencv.Label.get_or_create(name=name).persist()
     logging.info("Setting secure cookie %s" % name)
     self.set_secure_cookie('label', name)
-    self.redirect("/harvest")
+    self.redirect("/")
 
 class HarvestHandler(SocketHandler):
   def process(self, cv_image):

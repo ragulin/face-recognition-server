@@ -109,7 +109,7 @@
       $('#input').hide();
       $('#training').show();
       setBarWidth(40, 'Saving label');
-      return $.post('/harvest', {
+      return $.post('/', {
         label: label
       }).success(function() {
         setBarWidth('50');

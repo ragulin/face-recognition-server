@@ -78,7 +78,7 @@ train = () ->
     $('#input').hide()
     $('#training').show()
     setBarWidth(40, 'Saving label')
-    $.post('/harvest', {label: label}).success(-> 
+    $.post('/', {label: label}).success(-> 
       setBarWidth('50')
       startHarvest())
 
