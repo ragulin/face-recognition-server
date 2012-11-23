@@ -124,9 +124,14 @@ class Label(BaseModel):
 
   def persist(self):
     path = os.path.join(self.IMAGE_DIR, self.name)
+    #if directory exists with 10 images
+    #delete it and recreate
+    if os.path.exists(path) and len(os.listdir(path)) >= 10:
+      os.unlink(path)
     if not os.path.exists(path):
       logging.info("Created directory: %s" % self.name)
       os.makedirs(path)
+
     Label.get_or_create(name=self.name)
 
 class Image(BaseModel):
