@@ -24,37 +24,56 @@ predict = () ->
   counter = 0
   window.ws.onmessage = (e) =>
     data = JSON.parse(e.data)
+    console.log data
+    $('#predict').show()
     if data
       name = data[0]
       distance = data[1]
+      $('.prettyprint').text(data) 
       if distance < 1000.0
-        $('.prettyprint').text(data) 
+        counter -= 1
       else
         counter += 1
       if counter > 10
         console.log counter
         counter = 0
         window.ws.close()
-        console.log 'about to start trainin'
+        console.log 'About to start training'
+        $('#predict').hide()
         train()
 
 train = () ->
-  console.log('started training')
+  console.log('Started training')
+  $('#predict').hide()
+  $('#train').show()
+  $('#input').show()
 
   startHarvest = ->
     setupWS('harvesting')
     window.ws.onmessage = (e) ->
-      console.log "closing training websocket"
+      console.log "closing harvesting websocket"
       window.ws.close()
+      setBarWidth(70, 'Training model')
       $.post('/train').success(-> 
         console.log("done training")
+        setBarWidth(100)
+        $('#training').hide()
         setupWS('predict')
         predict()
       )
 
   saveLabel = (label) ->
-    console.log "saving " + label
-    $.post('/harvest', {label: label}).success(-> startHarvest())
+    console.log "Saving " + label
+    $('#input').hide()
+    $('#training').show()
+    setBarWidth(40, 'Saving label')
+    $.post('/harvest', {label: label}).success(-> 
+      setBarWidth('50')
+      startHarvest())
+
+  setBarWidth = (w, text = 'Saving images') ->
+    $('.bar').css('width', "#{w}%")
+    $('.bar').text(text)
 
   $('#start').click((e)-> 
     e.preventDefault()
@@ -66,12 +85,12 @@ navigator.webkitGetUserMedia({'video': true, 'audio': false}, onSuccess, onError
 setupWS('predict')
 predict()
 
-$('#stop').click((e)-> 
-  e.preventDefault()
-  window.ws.close()
-)
+#$('#stop').click((e)-> 
+#  e.preventDefault()
+#  window.ws.close()
+#)
 
-$('#train').click((e)-> 
-  e.preventDefault()
-  $.post('/train').success(-> console.log("done training"))
-)
+#$('#train').click((e)-> 
+#  e.preventDefault()
+#  $.post('/train').success(-> console.log("done training"))
+#)

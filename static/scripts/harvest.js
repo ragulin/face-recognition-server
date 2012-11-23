@@ -45,11 +45,14 @@
     return window.ws.onmessage = function(e) {
       var data, distance, name;
       data = JSON.parse(e.data);
+      console.log(data);
+      $('#predict').show();
       if (data) {
         name = data[0];
         distance = data[1];
+        $('.prettyprint').text(data);
         if (distance < 1000.0) {
-          $('.prettyprint').text(data);
+          counter -= 1;
         } else {
           counter += 1;
         }
@@ -57,7 +60,8 @@
           console.log(counter);
           counter = 0;
           window.ws.close();
-          console.log('about to start trainin');
+          console.log('About to start training');
+          $('#predict').hide();
           return train();
         }
       }
@@ -65,27 +69,44 @@
   };
 
   train = function() {
-    var saveLabel, startHarvest;
-    console.log('started training');
+    var saveLabel, setBarWidth, startHarvest;
+    console.log('Started training');
+    $('#predict').hide();
+    $('#train').show();
+    $('#input').show();
     startHarvest = function() {
       setupWS('harvesting');
       return window.ws.onmessage = function(e) {
-        console.log("closing training websocket");
+        console.log("closing harvesting websocket");
         window.ws.close();
+        setBarWidth(70, 'Training model');
         return $.post('/train').success(function() {
           console.log("done training");
+          setBarWidth(100);
+          $('#training').hide();
           setupWS('predict');
           return predict();
         });
       };
     };
     saveLabel = function(label) {
-      console.log("saving " + label);
+      console.log("Saving " + label);
+      $('#input').hide();
+      $('#training').show();
+      setBarWidth(40, 'Saving label');
       return $.post('/harvest', {
         label: label
       }).success(function() {
+        setBarWidth('50');
         return startHarvest();
       });
+    };
+    setBarWidth = function(w, text) {
+      if (text == null) {
+        text = 'Saving images';
+      }
+      $('.bar').css('width', "" + w + "%");
+      return $('.bar').text(text);
     };
     return $('#start').click(function(e) {
       var label;
@@ -105,17 +126,5 @@
   setupWS('predict');
 
   predict();
-
-  $('#stop').click(function(e) {
-    e.preventDefault();
-    return window.ws.close();
-  });
-
-  $('#train').click(function(e) {
-    e.preventDefault();
-    return $.post('/train').success(function() {
-      return console.log("done training");
-    });
-  });
 
 }).call(this);

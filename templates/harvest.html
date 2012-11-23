@@ -5,25 +5,26 @@
   <h1>Opencv, Webrtc, Python and Websockets</h1>
 </div>
 <div class="row">
-  <span class="span5">
+  <div class="span5">
     <video id="live" width="320" height="240" autoplay></video>
     <canvas width="320" id="canvas" height="240" ></canvas>
-  </span>
-  <span class="span5">
-    <form class="form-horizontal">
-      <p>
-        <label for="name">Name:</label>
-        <input type="text" name="name" id="name" value="" />
-      </p>
-      <p>
-        <button type="submit" class="btn" id="start">Start!</button>
-        <button type="submit" class="btn" id="stop">Stop!</button>
-        <button type="submit" class="btn" id="train">Train!</button>
-      </p>
-    </form>
-    <pre class="prettyprint">
-    </pre>
-  </span>
+  </div>
+  <div class="span5">
+    <div id="train">
+      <form id="input" class="form-horizontal">
+          <label for="name">I dont seem to recognize you, whats your name?</label>
+          <input type="text" name="name" id="name" value="" />
+          <button type="submit" class="btn" id="start">Ok</button>
+      </form>
+      <div id="training" class="progress progress-striped active">
+        <div class="bar" style="width: 20%;">Saving images...</div>
+      </div>
+    </div>
+    <div id="predict">
+      <pre class="prettyprint">
+      </pre>
+    </div>
+  </div>
 </div>
 {% end %}
 
