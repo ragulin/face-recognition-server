@@ -1,4 +1,5 @@
 # from http://bytefish.de/blog/validating_algorithms
+
 import os
 import sys
 import cv2
@@ -7,6 +8,8 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn import cross_validation as cval
 from sklearn.metrics import precision_score
+sys.path.append("../opencv.py")
+import opencv
 
 def read_images(path, sz=None):
   """Reads the images in a given folder, resizes images on the fly if size is given.
@@ -46,8 +49,8 @@ def read_images(path, sz=None):
 class FaceRecognizer(BaseEstimator):
   def __init__(self):
     #self.model = model
-    #self.model = cv2.createFisherFaceRecognizer()
-    self.model = cv2.createEigenFaceRecognizer()
+    self.model = cv2.createFisherFaceRecognizer()
+    #self.model = cv2.createEigenFaceRecognizer()
 
   def fit(self, X, y):
     self.model.train(X, y)
@@ -56,9 +59,10 @@ class FaceRecognizer(BaseEstimator):
     return [self.model.predict(T[i]) for i in range(0, T.shape[0])]
 
 if __name__ == "__main__":
-  [X, y] = read_images(sys.argv[1], (100,100))
+  #[X, y] = read_images(sys.argv[1], (100,100))
 
   #print len(os.listdir("../data/images/"))
+  [X, y] = opencv.load_images_from_db()
   y = np.asarray(y, dtype=np.int32)
   cv = cval.StratifiedKFold(y, 10)
 
