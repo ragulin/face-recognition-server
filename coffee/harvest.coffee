@@ -42,13 +42,16 @@ predict = () ->
         errorCounter -= 1
       else
         errorCounter += 1
-      if errorCounter > ERROR_THRESHOLD
+      if errorCounter > ERROR_THRESHOLD and not keepPredicting()
         console.log errorCounter
         errorCounter = 0
         window.ws.close()
 
 showFace = () ->
   $('#show-face').attr('checked')
+
+keepPredicting = () ->
+  $('#keep-predicting').attr('checked')
 
 train = () ->
   console.log('Started training')
