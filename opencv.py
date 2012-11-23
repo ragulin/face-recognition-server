@@ -91,7 +91,8 @@ def predict(cv_image):
     cropped = to_grayscale(crop_faces(cv_image, faces))
     resized = cv2.resize(cropped, (100,100))
 
-    model = cv2.createFisherFaceRecognizer()
+    #model = cv2.createFisherFaceRecognizer()
+    model = cv2.createEigenFaceRecognizer()
     model.load("fishermodel.mdl")
     result = model.predict(resized)
     result = (Label.get(Label.id == result[0]).name, result[1])
