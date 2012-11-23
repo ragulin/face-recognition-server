@@ -15,6 +15,9 @@ update = =>
                   window.ws?.send(blob) 
                 ,'image/jpeg')
 
+# if distance is more then MAX_DISTANCE increment error counter
+MAX_DISTANCE = 1000
+ERROR_THRESHOLD = 10
 video = document.querySelector('video')
 canvas = document.querySelector('canvas')
 ctx = canvas.getContext('2d')
@@ -23,24 +26,24 @@ ctx.lineWidth = 2
 
 predict = () ->
   console.log('Started to predict')
-  counter = 0
+  errorCounter = 0
   window.ws.onmessage = (e) =>
     data = JSON.parse(e.data)
     $('#predict').show()
     if data
       debugArea = $('.prettyprint')
       debugArea.text(JSON.stringify(data, undefined, 2))
-      debugArea.append("\n\nError counter: #{counter}")
+      debugArea.append("\n\nError counter: #{errorCounter}")
 
       $('#name-of-face').text("Hello #{data.face.name}!")
       ctx.strokeRect(data.face.coords.x, data.face.coords.y, data.face.coords.width, data.face.coords.height) if showFace()
-      if data.face.distance < 1000 and counter > -10
-        counter -= 1
+      if data.face.distance < MAX_DISTANCE and errorCounter > ERROR_THRESHOLD * -1
+        errorCounter -= 1
       else
-        counter += 1
-      if counter > 10
-        console.log counter
-        counter = 0
+        errorCounter += 1
+      if errorCounter > ERROR_THRESHOLD
+        console.log errorCounter
+        errorCounter = 0
         window.ws.close()
         console.log 'About to start training'
         $('#predict').hide()
