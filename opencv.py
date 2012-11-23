@@ -3,6 +3,7 @@ import sys
 import cv2
 import numpy as np
 import logging
+import shutil
 from peewee import *
 
 MODEL_FILE = "model.mdl"
@@ -127,7 +128,8 @@ class Label(BaseModel):
     #if directory exists with 10 images
     #delete it and recreate
     if os.path.exists(path) and len(os.listdir(path)) >= 10:
-      os.unlink(path)
+      shutil.rmtree(path)
+
     if not os.path.exists(path):
       logging.info("Created directory: %s" % self.name)
       os.makedirs(path)
