@@ -4,10 +4,11 @@ onSuccess = (localMediaStream) ->
   video.src = webkitURL.createObjectURL(localMediaStream)
   setInterval(update, 250) 
 
-setupWS = (url) ->
+setupWS = (url, close) ->
   window.ws?.close()
   window.ws = new WebSocket("ws://#{location.host}/#{url}")
   window.ws.onopen = ->  console.log "Opened websocket #{url}"
+  window.ws.onclose = close
 
 update = => 
   ctx.drawImage(video, 0, 0, 320, 240)
@@ -45,33 +46,23 @@ predict = () ->
         console.log errorCounter
         errorCounter = 0
         window.ws.close()
-        console.log 'About to start training'
-        $('#predict').hide()
-        train()
-
 
 showFace = () ->
   $('#show-face').attr('checked')
 
 train = () ->
   console.log('Started training')
+  $('#name').val("")
   $('#predict').hide()
   $('#train').show()
   $('#input').show()
 
   startHarvest = ->
-    setupWS('harvesting')
+    setupWS('harvesting', onTrainClose)
     window.ws.onmessage = (e) ->
       console.log "closing harvesting websocket"
       window.ws.close()
       setBarWidth(70, 'Training model')
-      $.post('/train').success(-> 
-        console.log("done training")
-        setBarWidth(100)
-        $('#training').hide()
-        setupWS('predict')
-        predict()
-      )
 
   saveLabel = (label) ->
     console.log "Saving " + label
@@ -82,18 +73,32 @@ train = () ->
       setBarWidth('50')
       startHarvest())
 
-  setBarWidth = (w, text = 'Saving images') ->
-    $('.bar').css('width', "#{w}%")
-    $('.bar').text(text)
-
   $('#start').click((e)-> 
     e.preventDefault()
     label = $('#name').val()
     saveLabel(label) if label 
   )
 
+setBarWidth = (w, text = 'Saving images') ->
+  $('.bar').css('width', "#{w}%")
+  $('.bar').text(text)
+
+onPredictClose = (e) ->
+  console.log 'About to start training'
+  $('#predict').hide()
+  train()
+
+onTrainClose = (e) ->
+  $.post('/train').success(-> 
+    console.log("done training")
+    setBarWidth(100)
+    $('#training').hide()
+    setupWS('predict', onPredictClose)
+    predict()
+  )
+
 navigator.webkitGetUserMedia({'video': true, 'audio': false}, onSuccess, onError) 
-setupWS('predict')
+setupWS('predict', onPredictClose)
 predict()
 
 #$('#stop').click((e)-> 

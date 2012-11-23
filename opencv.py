@@ -84,6 +84,7 @@ def load_images_from_db():
 def train():
   images, labels = load_images_from_db()
   model = cv2.createFisherFaceRecognizer()
+  #model = cv2.createEigenFaceRecognizer()
   model.train(images,labels)
   model.save(MODEL_FILE)
 
@@ -94,8 +95,8 @@ def predict(cv_image):
     cropped = to_grayscale(crop_faces(cv_image, faces))
     resized = cv2.resize(cropped, (100,100))
 
-    #model = cv2.createFisherFaceRecognizer()
-    model = cv2.createEigenFaceRecognizer()
+    model = cv2.createFisherFaceRecognizer()
+    #model = cv2.createEigenFaceRecognizer()
     model.load(MODEL_FILE)
     result = model.predict(resized)
     result = {
