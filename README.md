@@ -35,12 +35,16 @@ Running it
 ----------
 Make sure the dependencies are met.
 
+* [SQLite](http://www.sqlite.org/)
 * [OpenCV](http://opencv.org) with python bindings (I'm using the trunk version)
 * [Tornado](www.tornadoweb.org)
 * [PIL](http://www.pythonware.com/products/pil/)
 * [Peewee](https://github.com/coleifer/peewee)
 * [scikit-learn](http://scikit-learn.org/stable/) (for running the crossvalidation)
 
+Create the database by issuing the following in the data folder `sqlite3 images.db < ../db/create_db.sql`.
+
 Download the [AT&T face database](http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html) and extract it to `data/images` before the server is started. This is needed to build the initial prediction model.
 
-Run with `python server.py`
+Run with `python server.py` and browse to http://localhost:8888 when the model has been trained.
+
