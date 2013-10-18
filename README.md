@@ -1,6 +1,6 @@
 Face recognition with webrtc, websockets and opencv
 ==========================================
-This is a webrtc, websockets and opencv experiment developed during a [athega](http://athega.se) hackday. 
+This is a webrtc, websockets and opencv experiment developed during a [athega](http://athega.se) hackday.
 
 How does it work?
 -------------------
@@ -21,7 +21,7 @@ Sample json response:
         }
       }
 
-Everything except `distance` is pretty self explanatory. 
+Everything except `distance` is pretty self explanatory.
 
 * `name` is the predicted name of the person in front of the camera.
 
@@ -45,6 +45,13 @@ Make sure the dependencies are met.
 Create the database by issuing the following in the data folder `sqlite3 images.db < ../db/create_db.sql`.
 
 Download the [AT&T face database](http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html) and extract it to `data/images` before the server is started. This is needed to build the initial prediction model.
+
+    cd data
+    wget http://www.cl.cam.ac.uk/Research/DTG/attarchive/pub/data/att_faces.tar.Z
+    tar zxvf att_faces.tar.Z
+    mv att_faces images
+
+Copy `haarcascade_frontalface_alt.xml` from `<path to opencv source>/data/haarcascades/` to the data folder.
 
 Run with `python server.py` and browse to http://localhost:8888 when the model has been trained.
 
