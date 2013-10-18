@@ -10,7 +10,8 @@ MODEL_FILE = "model.mdl"
 
 def detect(img, cascade):
   gray = to_grayscale(img)
-  rects = cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+  rects = cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
+
   if len(rects) == 0:
     return []
   return rects
@@ -29,7 +30,7 @@ def contains_face(img):
 
 def save(path, img):
   cv2.imwrite(path, img)
-  
+
 def crop_faces(img, faces):
   for face in faces:
     x, y, h, w = [result for result in face]
@@ -90,7 +91,7 @@ def train():
 
 def predict(cv_image):
   faces = detect_faces(cv_image)
-  result = None 
+  result = None
   if len(faces) > 0:
     cropped = to_grayscale(crop_faces(cv_image, faces))
     resized = cv2.resize(cropped, (100,100))
@@ -111,7 +112,7 @@ def predict(cv_image):
           }
        }
     }
-  return result 
+  return result
 
 db = SqliteDatabase("data/images.db")
 class BaseModel(Model):
