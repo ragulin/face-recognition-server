@@ -37,7 +37,7 @@ Make sure the dependencies are met.
 
 * [SQLite](http://www.sqlite.org/)
 * [OpenCV](http://opencv.org) with python bindings (I'm using the trunk version)
-* [Tornado](www.tornadoweb.org)
+* [Tornado](http://www.tornadoweb.org)
 * [PIL](http://www.pythonware.com/products/pil/)
 * [Peewee](https://github.com/coleifer/peewee)
 * [scikit-learn](http://scikit-learn.org/stable/) (for running the crossvalidation)
